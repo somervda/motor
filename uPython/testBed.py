@@ -13,7 +13,7 @@ r = RotaryIRQ(pin_num_clk=15,
               pin_num_dt=14,
               min_val=0,
               max_val=20,
-              reverse=False,
+              reverse=True,
               range_mode=RotaryIRQ.RANGE_BOUNDED)
 
 
