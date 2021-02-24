@@ -26,8 +26,12 @@ statusTimer = Timer()
 gSpeed = 0
 gIsForward = True
 gDuration = 0
-gFreq = 1000
+gFreq = 300
 gCycle = 0
+
+# Do manual garbage collects to manage CPU usage
+gc.collect()
+gc.disable()
 
 
 def motorEncoderCallback(pin):
@@ -105,4 +109,6 @@ while True:
     setSpeed(20)
     time.sleep(5)
     setSpeed(10)
+    time.sleep(5)
+    setSpeed(5)
     time.sleep(5)
