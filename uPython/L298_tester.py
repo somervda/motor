@@ -6,6 +6,9 @@ import gc
 from dataLogger import DataLogger
 import umemory
 
+DURATION = 3
+PWM_FREQUENCY = 300
+
 # Set up OLED display interface
 WIDTH = 128
 HEIGHT = 64
@@ -14,13 +17,14 @@ i2c = I2C(0)
 oled = SSD1306_I2C(WIDTH, HEIGHT, i2c)
 
 # Set up motor encoder interface
-gMotorEncoderCnt = 0
 motorEncoder = Pin(10, Pin.IN)
 
-#  Set globals
-gDuration = 3
-gFreq = 300
-gCycle = 0
+
+# Varabled used in function that are not updated, so don't need to be global
+cycle = 0
+
+#  Set globals (Updated within functions)
+gMotorEncoderCnt = 0
 
 # Do manual garbage collects to manage CPU usage
 gc.collect()
@@ -33,9 +37,6 @@ def motorEncoderCallback(pin):
 
 
 def setSpeed(speed, isForward=True):
-    global gDuration
-    global gCycle
-    global gFreq
     global gMotorEncoderCnt
 
     oled.fill(0)
@@ -43,24 +44,24 @@ def setSpeed(speed, isForward=True):
     oled.text("forward: {}".format(isForward), 5, 15)
     oled.show()
     print("speed: {} isForward?: {} free:{} cycle:{}".format(
-        speed, isForward, umemory.free(), gCycle))
+        speed, isForward, umemory.free(), cycle))
 
     # Run for the sleepFor seconds
-    motorEncoder.irq(trigger=machine.Pin.IRQ_FALLING,
+    motorEncoder.irq(trigger=Pin.IRQ_FALLING,
                      handler=motorEncoderCallback)
     if isForward:
         my298.forward(speed)
     else:
         my298.reverse(speed)
-    time.sleep(gDuration)
+    time.sleep(DURATION)
     # Reset motorEncoder and handler
-    # Stop the irq handeler before doing anything else!
+    # Stop the irq handler before doing anything else!
     motorEncoder.irq(handler=None)
     my298.stop()
     motorEncoder.init()
-    #  Write out log and cleanup gc, and encoder counter
-    dl.write(str(gCycle) + "\t" + str(speed) + "\t" + str(isForward) + "\t" +
-             str(gMotorEncoderCnt) + "\t" + str(gDuration) + "\t" + str(gFreq) + "\tL298")
+    #  Write out log and cleanup gc, and reset encoder counter
+    dl.write(str(cycle) + "\t" + str(speed) + "\t" + str(isForward) + "\t" +
+             str(gMotorEncoderCnt) + "\t" + str(DURATION) + "\t" + str(PWM_FREQUENCY) + "\tL298")
     gc.collect()
     gMotorEncoderCnt = 0
     # time.sleep(1)
@@ -68,11 +69,11 @@ def setSpeed(speed, isForward=True):
 # *********** Main code **************
 
 
-my298 = L298(11, 12, 13, gFreq)
+my298 = L298(11, 12, 13, PWM_FREQUENCY)
 dl = DataLogger("cycle\tspeed\tisForward\tmotorEncoderCnt\tduration\tfreq\tmc")
 
 while True:
-    gCycle += 1
+    cycle += 1
     setSpeed(0)
     setSpeed(100)
     setSpeed(80)
