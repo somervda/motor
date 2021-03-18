@@ -1,10 +1,9 @@
-# A motor controller class for managing a L298 type controller
-# it should also work for tb6612fng contollers
+# A HBridge motor controller class for managing L298 and TB6612FNG motor controllers
 
 from machine import Pin, PWM
 
 
-class L298():
+class HBridge():
     max_duty_u16 = 65535
 
     def __init__(self, pin_num_pwm, pin_num_in1, pin_num_in2, freq=1000):
@@ -14,7 +13,7 @@ class L298():
         self._pin_in2 = Pin(pin_num_in2, Pin.OUT)
         self._pwm.freq(freq)
 
-    #  functions to set motor controler signals
+    #  functions to set motor controller signals
     def setForward(self):
         self._pin_in1.on()
         self._pin_in2.off()
@@ -31,11 +30,11 @@ class L298():
     def forward(self, speed):
         # Speed %
         self.setForward()
-        self._pwm.duty_u16(self.speedToU16(speed))
+        self._pwm.duty_u16(self.speedToU16(abs(speed)))
 
     def reverse(self, speed):
         self.setReverse()
-        self._pwm.duty_u16(self.speedToU16(speed))
+        self._pwm.duty_u16(self.speedToU16(abs(speed)))
 
     def stop(self):
         self.setBrake()

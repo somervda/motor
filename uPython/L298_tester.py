@@ -1,13 +1,13 @@
-from L298 import L298
+from hbridge import HBridge
 from ssd1306 import SSD1306_I2C
 from machine import Pin, I2C
-import time
+import utime
 import gc
 from dataLogger import DataLogger
 import umemory
 
 DURATION = 3
-PWM_FREQUENCY = 300
+PWM_FREQUENCY = 1000
 
 # Set up OLED display interface
 WIDTH = 128
@@ -53,7 +53,7 @@ def setSpeed(speed, isForward=True):
         my298.forward(speed)
     else:
         my298.reverse(speed)
-    time.sleep(DURATION)
+    utime.sleep(DURATION)
     # Reset motorEncoder and handler
     # Stop the irq handler before doing anything else!
     motorEncoder.irq(handler=None)
@@ -69,16 +69,19 @@ def setSpeed(speed, isForward=True):
 # *********** Main code **************
 
 
-my298 = L298(11, 12, 13, PWM_FREQUENCY)
+my298 = HBridge(11, 12, 13, PWM_FREQUENCY)
 dl = DataLogger("cycle\tspeed\tisForward\tmotorEncoderCnt\tduration\tfreq\tmc")
 
-while True:
-    cycle += 1
-    setSpeed(0)
-    setSpeed(100)
-    setSpeed(80)
-    setSpeed(60)
-    setSpeed(40)
-    setSpeed(20)
-    setSpeed(10)
-    setSpeed(5)
+setSpeed(70, False)
+utime.sleep_ms(3000)
+my298.stop()
+# while True:
+#     cycle += 1
+#     setSpeed(70, False)
+# setSpeed(100)
+# setSpeed(80)
+# setSpeed(60)
+# setSpeed(40)
+# setSpeed(20)
+# setSpeed(10)
+# setSpeed(5)

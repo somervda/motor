@@ -3,16 +3,27 @@ from ssd1306 import SSD1306_I2C
 import framebuf
 
 # Set up motor encoder interface
-motorEncoderCnt = 0
-motorEncoder = Pin(10, Pin.IN)
+motorEncoderCntR = 0
+motorEncoderR = Pin(10, Pin.IN)
+motorEncoderCntL = 0
+motorEncoderL = Pin(16, Pin.IN)
 
 
-def motorEncoderCallback(pin):
-    global motorEncoderCnt
-    motorEncoderCnt = motorEncoderCnt+1
+def motorEncoderCallbackR(pin):
+    global motorEncoderCntR
+    motorEncoderCntR = motorEncoderCntR+1
 
 
-motorEncoder.irq(trigger=machine.Pin.IRQ_FALLING, handler=motorEncoderCallback)
+def motorEncoderCallbackL(pin):
+    global motorEncoderCntL
+    motorEncoderCntL = motorEncoderCntL+1
+
+
+motorEncoderR.irq(trigger=machine.Pin.IRQ_FALLING,
+                  handler=motorEncoderCallbackR)
+
+motorEncoderL.irq(trigger=machine.Pin.IRQ_FALLING,
+                  handler=motorEncoderCallbackL)
 
 # Set up OLED display interface
 WIDTH = 128
@@ -26,11 +37,14 @@ statusTimer = Timer()
 
 
 def updateStatus(timer):
-    global motorEncoderCnt
+    global motorEncoderCntR
+    global motorEncoderCntL
 
     oled.fill(0)
-    oled.text("Pulses:" + str(motorEncoderCnt), 5, 5)
-    motorEncoderCnt = 0
+    oled.text("Right:" + str(motorEncoderCntR), 5, 5)
+    oled.text("Left:" + str(motorEncoderCntL), 5, 15)
+    motorEncoderCntR = 0
+    motorEncoderCntL = 0
     oled.show()
     # print("motorEncoderCnt:",motorEncoderCnt)
 
